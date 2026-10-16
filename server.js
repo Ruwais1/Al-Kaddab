@@ -23,7 +23,7 @@ const ROUND_CHOICES = [3, 5, 7, 10];
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const PUBLIC = path.join(__dirname, 'public');
+const Public = path.join(__dirname, 'public');
 
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC, 'player.html')));
 app.get('/host', (req, res) => res.sendFile(path.join(PUBLIC, 'host.html')));
