@@ -1,0 +1,112 @@
+:root {
+  --night: #1B2A4E;
+  --night-2: #25385F;
+  --night-3: #34497A;
+  --paper: #F6E7C8;
+  --paper-2: #E6D1A6;
+  --ink: #2A1E12;
+  --ink-soft: #6B5A43;
+  --saffron: #F2B33D;
+  --saffron-deep: #B9801C;
+  --stamp: #C81E35;
+  --truth: #1E7F4F;
+  --mist: #AEBCDB;
+  --display: "Lalezar", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--night);
+  color: var(--paper);
+  font-family: var(--body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--saffron); outline-offset: 3px; }
+
+.wordmark {
+  font-family: var(--display);
+  font-weight: 400;
+  color: var(--saffron);
+  line-height: 1;
+  margin: 0;
+}
+
+.btn {
+  background: var(--saffron);
+  color: var(--ink);
+  border: 0;
+  border-radius: 12px;
+  padding: .55em 1.5em .45em;
+  font-family: var(--display);
+  font-size: 1.5rem;
+  box-shadow: 0 5px 0 var(--saffron-deep);
+  transition: transform .08s, box-shadow .08s;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--saffron-deep); }
+.btn:disabled { background: var(--night-3); color: var(--mist); box-shadow: none; cursor: not-allowed; transform: none; }
+
+.btn-quiet {
+  background: transparent;
+  color: var(--mist);
+  border: 2px solid var(--night-3);
+  border-radius: 10px;
+  padding: .45em 1em;
+  font-size: 1rem;
+}
+
+/* بطاقة ورقية على الطاولة */
+.card {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 1.1em 1.3em;
+  box-shadow: 5px 6px 0 rgba(0, 0, 0, .35);
+}
+.tilt > .card:nth-child(odd) { transform: rotate(-1.2deg); }
+.tilt > .card:nth-child(even) { transform: rotate(.9deg); }
+
+.blank {
+  display: inline-block;
+  min-width: 3.5ch;
+  height: .2em;
+  margin: 0 .2em;
+  background: var(--saffron);
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+/* الختم: لحظة الكشف */
+.stamp {
+  position: absolute;
+  top: -.75em;
+  inset-inline-start: .5em;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: .62em;
+  line-height: 1.2;
+  padding: .12em .55em 0;
+  color: var(--stamp);
+  background: var(--paper);
+  border: 3px solid currentColor;
+  border-radius: 8px;
+  transform: rotate(-9deg);
+  white-space: nowrap;
+  animation: stamp .42s cubic-bezier(.2, 1.5, .4, 1) both;
+  animation-delay: calc(var(--i, 0) * 500ms);
+}
+.stamp.truth { color: var(--truth); }
+@keyframes stamp {
+  from { opacity: 0; transform: rotate(-9deg) scale(2.4); }
+  to { opacity: 1; transform: rotate(-9deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

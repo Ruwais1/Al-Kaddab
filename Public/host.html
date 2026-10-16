@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الكذّاب: الشاشة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  main {
+    flex: 1; width: 100%; max-width: 1500px; margin: 0 auto;
+    padding: clamp(16px, 3vw, 48px);
+    display: flex; flex-direction: column;
+  }
+  section { flex: 1; display: flex; flex-direction: column; gap: clamp(18px, 2.6vw, 40px); }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--mist); font-size: clamp(1rem, 1.5vw, 1.5rem); }
+  .topbar .wordmark { font-size: clamp(1.6rem, 2.6vw, 2.6rem); }
+
+  .timer {
+    --p: 1;
+    width: clamp(64px, 7vw, 108px); aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: var(--display); font-size: clamp(1.6rem, 2.8vw, 3rem); color: var(--paper);
+    background:
+      radial-gradient(closest-side, var(--night) 79%, transparent 81%),
+      conic-gradient(var(--ring, var(--saffron)) calc(var(--p) * 360deg), var(--night-3) 0);
+  }
+  .timer.low { --ring: var(--stamp); }
+
+  .question {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(2rem, 4.8vw, 4.8rem); line-height: 1.4;
+    margin: 0 auto; max-width: 26ch; text-align: center; text-wrap: balance;
+  }
+  .question.small { font-size: clamp(1.4rem, 2.6vw, 2.6rem); max-width: 40ch; }
+  .hint { margin: 0; text-align: center; color: var(--mist); font-size: clamp(1.05rem, 1.7vw, 1.7rem); }
+  .grow { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(18px, 2.6vw, 40px); }
+
+  .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
+  .chip {
+    background: var(--night-2); border-radius: 999px; padding: .3em 1em;
+    font-size: clamp(1rem, 1.5vw, 1.5rem); display: flex; align-items: center; gap: .45em;
+  }
+  .chip.done { background: var(--saffron); color: var(--ink); }
+  .chip.off { opacity: .45; }
+  .chip .mark { font-weight: 600; }
+
+  /* الانتظار */
+  .lobby { flex: 1; display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(24px, 5vw, 90px); align-items: center; }
+  .lobby .wordmark { font-size: clamp(5rem, 14vw, 13rem); }
+  .tagline { font-size: clamp(1.15rem, 2vw, 2rem); margin: .35em 0 1.1em; max-width: 24ch; }
+  .lobby .chips { justify-content: flex-start; margin-bottom: .8rem; }
+  .count { color: var(--mist); margin: 0 0 1.4rem; font-size: clamp(1rem, 1.4vw, 1.35rem); }
+  .controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+  .controls label { color: var(--mist); }
+  select {
+    font: inherit; font-size: 1.15rem; background: var(--night-2); color: var(--paper);
+    border: 2px solid var(--night-3); border-radius: 10px; padding: .4em .8em;
+  }
+  .qr-card { justify-self: center; width: 100%; max-width: 440px; text-align: center; padding: clamp(14px, 1.6vw, 24px); transform: rotate(1.5deg); }
+  .qr-card img { display: block; width: 100%; height: auto; border-radius: 4px; image-rendering: pixelated; }
+  .qr-card .scan { font-family: var(--display); font-size: clamp(1.3rem, 2vw, 2rem); margin: .5em 0 0; }
+  .qr-card .url { direction: ltr; font-size: clamp(.9rem, 1.2vw, 1.15rem); color: var(--ink-soft); margin: .1em 0 0; word-break: break-all; }
+
+  /* الخيارات */
+  .options {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: clamp(22px, 2.6vw, 40px);
+  }
+  .options .card {
+    min-height: 4.4em; display: flex; flex-direction: column; justify-content: center;
+    text-align: center; font-size: clamp(1.3rem, 2.2vw, 2.2rem); font-weight: 600; line-height: 1.35;
+  }
+  .who { font-size: .55em; font-weight: 400; color: var(--ink-soft); margin-top: .45em; line-height: 1.5; }
+  .card.is-truth { box-shadow: 0 0 0 4px var(--truth), 5px 6px 0 4px rgba(0,0,0,.35); }
+
+  /* الكشف */
+  .reveal { display: grid; grid-template-columns: 1fr minmax(230px, 300px); gap: clamp(22px, 3vw, 50px); align-items: start; }
+  .reveal .options { padding-top: .8em; }
+  .board { background: var(--night-2); border-radius: 14px; padding: 1rem 1.2rem; }
+  .board h2 { font-family: var(--display); font-weight: 400; color: var(--saffron); font-size: 1.9rem; margin: 0 0 .3em; }
+  .board ol { list-style: none; margin: 0; padding: 0; }
+  .board li { display: flex; justify-content: space-between; gap: .5em; padding: .45em 0; border-bottom: 1px solid var(--night-3); font-size: 1.3rem; }
+  .board li:last-child { border-bottom: 0; }
+  .pts { display: flex; align-items: center; gap: .6em; }
+  .gain { background: var(--saffron); color: var(--ink); border-radius: 999px; padding: .05em .55em; font-size: .85em; font-weight: 600; direction: ltr; unicode-bidi: isolate; }
+  .total { font-family: var(--display); min-width: 1.6em; text-align: end; }
+  .actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+  /* النهاية */
+  .final { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; text-align: center; }
+  .winner-label { margin: 0; color: var(--mist); font-size: clamp(1.2rem, 2vw, 2rem); }
+  .winner { margin: 0; font-family: var(--display); font-weight: 400; color: var(--saffron); font-size: clamp(4rem, 11vw, 10rem); line-height: 1.1; }
+  .ranking { list-style: none; margin: 0 0 1rem; padding: 0; width: min(540px, 100%); }
+  .ranking li { display: flex; justify-content: space-between; padding: .5em .2em; border-bottom: 1px solid var(--night-3); font-size: 1.5rem; }
+
+  .fs { position: fixed; bottom: 14px; left: 14px; }
+  .offline { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); background: var(--stamp); color: #fff; padding: .4em 1.1em; border-radius: 10px; }
+
+  @media (max-width: 820px) {
+    .lobby, .reveal { grid-template-columns: 1fr; }
+    .lobby .qr-card { max-width: 300px; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- الانتظار -->
+  <section data-phase="lobby">
+    <div class="lobby">
+      <div>
+        <h1 class="wordmark">الكذّاب</h1>
+        <p class="tagline">اكتب كذبة تمشي على أهلك، واكشف الصح من بين كذباتهم.</p>
+        <ul class="chips" id="lobby-players"></ul>
+        <p class="count" id="lobby-count"></p>
+        <div class="controls">
+          <button class="btn" id="start" disabled>ابدأ اللعبة</button>
+          <label for="rounds">عدد الجولات</label>
+          <select id="rounds">
+            <option value="3">٣</option>
+            <option value="5" selected>٥</option>
+            <option value="7">٧</option>
+            <option value="10">١٠</option>
+          </select>
+        </div>
+      </div>
+      <div class="card qr-card">
+        <img id="qr" alt="باركود الدخول للعبة">
+        <p class="scan">امسح وادخل</p>
+        <p class="url" id="qr-url"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- الكتابة -->
+  <section data-phase="writing" hidden>
+    <div class="topbar"><span class="wordmark">الكذّاب</span><span class="round"></span><div class="timer"></div></div>
+    <div class="grow">
+      <h2 class="question" id="w-question"></h2>
+      <p class="hint">اكتبوا كذبة مقنعة على جوالاتكم.</p>
+    </div>
+    <ul class="chips" id="w-players"></ul>
+    <div class="actions"><button class="btn-quiet" data-skip>إنهاء الوقت الحين</button></div>
+  </section>
+
+  <!-- التصويت -->
+  <section data-phase="voting" hidden>
+    <div class="topbar"><span class="wordmark">الكذّاب</span><span class="round"></span><div class="timer"></div></div>
+    <h2 class="question small" id="v-question"></h2>
+    <p class="hint">وحدة بس منها صحيحة. اختاروها من جوالاتكم.</p>
+    <ul class="options tilt" id="v-options"></ul>
+    <ul class="chips" id="v-players"></ul>
+    <div class="actions"><button class="btn-quiet" data-skip>إنهاء الوقت الحين</button></div>
+  </section>
+
+  <!-- الكشف -->
+  <section data-phase="reveal" hidden>
+    <div class="topbar"><span class="wordmark">الكذّاب</span><span class="round"></span><span></span></div>
+    <h2 class="question small" id="r-question"></h2>
+    <div class="reveal">
+      <ul class="options tilt" id="r-options"></ul>
+      <div class="board">
+        <h2>النقاط</h2>
+        <ol id="r-board"></ol>
+      </div>
+    </div>
+    <div class="actions"><button class="btn" id="next">الجولة الجاية</button></div>
+  </section>
+
+  <!-- النهاية -->
+  <section data-phase="final" hidden>
+    <div class="final">
+      <p class="winner-label" id="f-label">الفايز</p>
+      <h2 class="winner" id="f-winner"></h2>
+      <ol class="ranking" id="f-ranking"></ol>
+      <button class="btn" id="again">لعبة جديدة</button>
+    </div>
+  </section>
+
+</main>
+<button class="btn-quiet fs" id="fs">ملء الشاشة</button>
+<div class="offline" id="offline" hidden>انقطع الاتصال بالسيرفر، نحاول نرجع…</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const $ = (s) => document.querySelector(s);
+  const fmt = (n) => Number(n).toLocaleString('ar-SA');
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  };
+  const joinNames = (names) => names.join('، ');
+
+  function renderQuestion(node, q) {
+    node.replaceChildren();
+    const parts = String(q || '').split('___');
+    parts.forEach((part, i) => {
+      node.append(document.createTextNode(part));
+      if (i < parts.length - 1) node.append(el('span', 'blank'));
+    });
+  }
+
+  const socket = io();
+  let S = null;
+  let deadline = 0;
+
+  socket.on('connect', () => { $('#offline').hidden = true; socket.emit('host:hello'); });
+  socket.on('disconnect', () => { $('#offline').hidden = false; });
+  socket.on('state', (s) => {
+    S = s;
+    deadline = s.remaining ? Date.now() + s.remaining : 0;
+    render();
+  });
+
+  fetch('/qr').then((r) => r.json()).then(({ url, dataUrl }) => {
+    $('#qr').src = dataUrl;
+    $('#qr-url').textContent = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  }).catch(() => { $('#qr-url').textContent = 'تعذّر إنشاء الباركود'; });
+
+  $('#start').onclick = () => socket.emit('host:start', { rounds: Number($('#rounds').value) });
+  $('#next').onclick = () => socket.emit('host:next');
+  $('#again').onclick = () => socket.emit('host:lobby');
+  document.querySelectorAll('[data-skip]').forEach((b) => (b.onclick = () => socket.emit('host:skip')));
+  $('#fs').onclick = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen?.();
+  };
+
+  function nameOf(id) {
+    const p = S.players.find((x) => x.id === id);
+    return p ? p.name : '؟';
+  }
+
+  function fillChips(list, showDone) {
+    list.replaceChildren();
+    for (const p of S.players) {
+      const c = el('li', 'chip' + (showDone && p.done ? ' done' : '') + (p.connected ? '' : ' off'));
+      c.append(el('span', null, p.name));
+      if (showDone && p.done) c.append(el('span', 'mark', '✓'));
+      if (!p.connected) c.append(el('span', null, '(طلع)'));
+      list.append(c);
+    }
+  }
+
+  function render() {
+    for (const sec of document.querySelectorAll('[data-phase]')) sec.hidden = sec.dataset.phase !== S.phase;
+    document.querySelectorAll('.round').forEach((r) => (r.textContent = `الجولة ${fmt(S.round)} من ${fmt(S.rounds)}`));
+
+    if (S.phase === 'lobby') renderLobby();
+    if (S.phase === 'writing') { renderQuestion($('#w-question'), S.question); fillChips($('#w-players'), true); }
+    if (S.phase === 'voting') renderVoting();
+    if (S.phase === 'reveal') renderReveal();
+    if (S.phase === 'final') renderFinal();
+    tick();
+  }
+
+  function renderLobby() {
+    const list = $('#lobby-players');
+    list.replaceChildren();
+    if (!S.players.length) list.append(el('li', 'chip off', 'ما دخل أحد للحين'));
+    else fillChips(list, false);
+    const n = S.players.filter((p) => p.connected).length;
+    $('#start').disabled = n < S.minPlayers;
+    $('#lobby-count').textContent = n < S.minPlayers
+      ? `تحتاجون ${fmt(S.minPlayers)} على الأقل عشان تبدون.`
+      : `${fmt(n)} جاهزين.`;
+  }
+
+  function renderVoting() {
+    renderQuestion($('#v-question'), S.question);
+    const list = $('#v-options');
+    list.replaceChildren();
+    for (const o of S.options) list.append(el('li', 'card', o.text));
+    fillChips($('#v-players'), true);
+  }
+
+  function renderReveal() {
+    renderQuestion($('#r-question'), S.question);
+    const list = $('#r-options');
+    list.replaceChildren();
+    // الكذبات تنختم أول، والصح آخر شي
+    const lies = S.options.filter((o) => !o.truth);
+    const order = new Map([...lies.map((o, i) => [o.id, i]), [S.options.find((o) => o.truth).id, lies.length]]);
+    for (const o of S.options) {
+      const card = el('li', 'card' + (o.truth ? ' is-truth' : ''));
+      const stamp = el('span', 'stamp' + (o.truth ? ' truth' : ''), o.truth ? 'الصح' : `كذبة ${joinNames(o.authors.map(nameOf))}`);
+      stamp.style.setProperty('--i', order.get(o.id));
+      card.append(stamp, el('span', null, o.text));
+      const voters = o.voters.map(nameOf);
+      const line = o.truth
+        ? (voters.length ? `عرفوها: ${joinNames(voters)}` : 'ما أحد عرفها')
+        : (voters.length ? `انخدع: ${joinNames(voters)}` : 'ما انخدع أحد');
+      card.append(el('span', 'who', line));
+      list.append(card);
+    }
+    const board = $('#r-board');
+    board.replaceChildren();
+    for (const p of [...S.players].sort((a, b) => b.score - a.score)) {
+      const li = el('li');
+      li.append(el('span', null, p.name));
+      const right = el('span', 'pts');
+      const g = S.gains[p.id] || 0;
+      if (g) right.append(el('span', 'gain', `+${fmt(g)}`));
+      right.append(el('span', 'total', fmt(p.score)));
+      li.append(right);
+      board.append(li);
+    }
+    $('#next').textContent = S.round >= S.rounds ? 'النتيجة النهائية' : 'الجولة الجاية';
+  }
+
+  function renderFinal() {
+    const sorted = [...S.players].sort((a, b) => b.score - a.score);
+    const top = sorted.length ? sorted[0].score : 0;
+    const winners = sorted.filter((p) => p.score === top);
+    $('#f-label').textContent = winners.length > 1 ? 'تعادل' : 'الفايز';
+    $('#f-winner').textContent = winners.map((p) => p.name).join(' و ');
+    const list = $('#f-ranking');
+    list.replaceChildren();
+    for (const p of sorted) {
+      const li = el('li');
+      li.append(el('span', null, p.name), el('span', null, `${fmt(p.score)} نقطة`));
+      list.append(li);
+    }
+  }
+
+  function tick() {
+    if (!S) return;
+    document.querySelectorAll('section:not([hidden]) .timer').forEach((t) => {
+      const left = deadline ? Math.max(0, deadline - Date.now()) : 0;
+      t.textContent = fmt(Math.ceil(left / 1000));
+      t.style.setProperty('--p', S.duration ? left / S.duration : 0);
+      t.classList.toggle('low', left < 10000);
+    });
+  }
+  setInterval(tick, 200);
+</script>
+</body>
+</html>
